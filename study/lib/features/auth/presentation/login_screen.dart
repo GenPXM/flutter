@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/domain/repositories/auth_repository.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,14 +28,22 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController.text.trim(),
     );
 
+    if (!mounted) return; // <-- Adicione essa verificação
+
     setState(() {
       isLoading = false;
     });
 
-    if (result['success']) {
-      final token = result['token'];
-      // TODO: Armazenar o token e navegar para a próxima tela
-      print('Login bem-sucedido! Token: $token');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Usuário logado com sucesso!')),
+    );
+
+    // Espera o snackbar aparecer
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Navega para tela seguinte
+    if (mounted) {
+      context.go('/register');
     } else {
       setState(() {
         errorMessage = result['message'];
@@ -50,17 +59,33 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-            TextField(controller: passwordController, decoration: const InputDecoration(labelText: 'Senha'), obscureText: true),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Senha'),
+              obscureText: true,
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: isLoading ? null : login,
-              child: isLoading ? const CircularProgressIndicator() : const Text('Entrar'),
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Entrar'),
             ),
             if (errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
           ],
         ),

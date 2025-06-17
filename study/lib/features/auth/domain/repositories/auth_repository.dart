@@ -21,4 +21,40 @@ class AuthService {
       return {'success': false, 'message': error['message'] ?? 'Erro de login'};
     }
   }
+
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String email,
+    required String cpf,
+    required String password,
+    required String confirmPassword,
+    required String role, // 'superadmin'| 'admin' | 'agent'
+  }) async {
+    final url = Uri.parse('$baseUrl/users');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'cpf': cpf,
+        'password': password,
+        'role': role,
+      }),
+    );
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return {
+        'success': true,
+        'message': 'Usuário criado com sucesso',
+        'user': data,
+      };
+    } else {
+      final error = jsonDecode(response.body);
+      return {
+        'success': false,
+        'message': error['message'] ?? 'Erro ao criar usuário',
+      };
+    }
+  }
 }
